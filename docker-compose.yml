@@ -1,10 +1,40 @@
-bspec:
-  build: .
-  command: node_modules/.bin/nodemon index.js
-  environment:
-    NODE_ENV: development
-  ports:
-    - '3000:3000'
-  volumes:
-    - .:/home/app/bspec
-    - /home/app/bspec/node_modules
+version: '2'
+services:
+  db:
+    image: mysql:5.7
+    volumes:
+      - "./.data/db:/var/lib/mysql"
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: bspec
+      MYSQL_DATABASE: bspec
+      MYSQL_USER: bspec
+      MYSQL_PASSWORD: bspec
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: myadmin
+    environment:
+     - PMA_ARBITRARY=1
+    restart: always
+    ports:
+     - 8080:80
+    volumes:
+     - /sessions
+
+  bspec:
+    depends_on:
+      - db
+    links:
+      - db
+    build: .
+    command: node_modules/.bin/nodemon index.js
+    environment:
+      DB_HOST: db
+      DB_PASSWORD: bspec
+      NODE_ENV: development
+    ports:
+      - '3000:3000'
+    volumes:
+      - .:/home/app/bspec
+      - /home/app/bspec/node_modules
